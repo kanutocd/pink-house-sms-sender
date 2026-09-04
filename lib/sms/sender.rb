@@ -2,9 +2,11 @@
 
 require_relative "sender/version"
 
+# Top-level namespace for SMS-related libraries.
 module Sms
+  # Namespace for the sms-sender gem.
   module Sender
+    # Base class for errors raised by sms-sender.
     class Error < StandardError; end
-    # Your code goes here...
   end
 end

@@ -2,12 +2,14 @@
 
 require "test_helper"
 
-class Sms::TestSender < Minitest::Test
-  def test_that_it_has_a_version_number
-    refute_nil ::Sms::Sender::VERSION
-  end
+module Sms
+  class TestSender < Minitest::Test
+    def test_that_it_has_a_version_number
+      refute_nil Sender::VERSION
+    end
 
-  def test_it_does_something_useful
-    assert false
+    def test_that_it_exposes_a_public_error_class
+      assert_operator Sender::Error, :<, StandardError
+    end
   end
 end
