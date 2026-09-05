@@ -11,11 +11,12 @@ delivery results and errors.
 
 ## Status
 
-Phase 1, the provider-neutral core domain, and the Phase 2 provider registry
-foundation are implemented. The current release provides the message,
+Phases 1–6 are implemented through the TextBee, Semaphore, and Twilio adapters. The current release provides the message,
 delivery, error, provider configuration, provider contract, supported-provider
-catalog, and lazy provider loading objects. Provider adapters and the
-high-level delivery router are planned for subsequent phases.
+catalog, lazy provider loading, and an injectable standard-library HTTP
+transport, plus direct TextBee, Semaphore, and Twilio HTTP delivery. The high-level
+delivery router and the remaining provider adapters are planned for subsequent
+phases.
 
 ## Installation
 
@@ -85,6 +86,39 @@ Sms::Sender.providers
 # => [:textbee, :semaphore, :twilio, :infobip]
 ```
 
+Provider adapters can use the HTTP client without taking a dependency on a
+provider SDK:
+
+```ruby
+client = Sms::Sender::HTTP::Client.new
+response = client.request(
+  :post,
+  "https://example.test/messages",
+  headers: { "Authorization" => "Bearer secret" },
+  body: { to: message.to, body: message.body }
+)
+```
+
+The client normalizes responses, serializes Hash bodies as JSON, supports
+separate connection/read/write and total timeouts, maps transport failures to
+normalized errors, and provides redacted headers for diagnostics.
+
+The first provider adapter can be used through the registry:
+
+```ruby
+registry = Sms::Sender::ProviderRegistry.new
+registry.configure(
+  :textbee,
+  settings: { api_key: ENV.fetch("TEXTBEE_API_KEY") }
+)
+
+delivery = registry.provider(:textbee).deliver(message)
+```
+
+TextBee sends through its default device unless `device_id` is configured.
+The adapter returns an accepted delivery with the provider's batch ID; that
+acceptance does not confirm handset delivery.
+
 ## Design principles
 
 - One repository and one gem for all supported providers.
@@ -136,10 +170,12 @@ bin/console                # Open a Ruby console
 The implementation plan is organized as follows:
 
 1. Core domain objects and contracts — complete
-2. Provider registry and lazy loading — current phase
-3. Internal HTTP transport
-4. TextBee, Semaphore, Twilio, and Infobip adapters
-5. Router, failure classification, and controlled failover
+2. Provider registry and lazy loading — complete
+3. Internal HTTP transport — complete
+4. TextBee adapter — complete
+5. Semaphore adapter — complete
+6. Twilio adapter — complete; Infobip remains
+7. Router, failure classification, and controlled failover
 6. Circuit breaking, health tracking, and automatic election
 7. Capability filtering, state storage, and observability
 8. Additional providers and production hardening

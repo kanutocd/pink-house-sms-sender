@@ -18,3 +18,5 @@
   mapping, and normalized provider error handling.
 - Added the Semaphore adapter with form-encoded request mapping,
   authentication, accepted-result handling, and normalized provider errors.
+- Added the Twilio adapter with Basic authentication, form-encoded message
+  submission, accepted-result handling, and normalized provider errors.
