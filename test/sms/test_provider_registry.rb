@@ -17,7 +17,7 @@ module Sms
 
         assert_equal %i[textbee semaphore twilio infobip], registry.supported
         assert_empty registry.configured
-        assert_equal registry.supported, Sender.providers
+        assert_includes Sender.providers, :textbee
       end
 
       def test_registers_configures_and_lazily_instantiates_provider

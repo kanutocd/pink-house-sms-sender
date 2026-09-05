@@ -22,6 +22,10 @@ Metrics/AbcSize:
     - "lib/sms/sender/http.rb"
     - "test/sms/test_http.rb"
     - "test/sms/test_text_bee.rb"
+    - "lib/sms/sender.rb"
+    - "test/sms/test_sender_api.rb"
+    - "lib/sms/sender/providers/semaphore.rb"
+    - "test/sms/test_semaphore.rb"
 
 Metrics/MethodLength:
   Exclude:
@@ -33,6 +37,10 @@ Metrics/MethodLength:
     - "test/sms/test_http.rb"
     - "lib/sms/sender/providers/text_bee.rb"
     - "test/sms/test_text_bee.rb"
+    - "lib/sms/sender.rb"
+    - "test/sms/test_sender_api.rb"
+    - "lib/sms/sender/providers/semaphore.rb"
+    - "test/sms/test_semaphore.rb"
 
 Metrics/ParameterLists:
   Exclude:

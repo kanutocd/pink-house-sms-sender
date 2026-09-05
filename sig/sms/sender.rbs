@@ -5,6 +5,8 @@ module Sms
 
     def self.registry: () -> ProviderRegistry
     def self.providers: () -> Array[Symbol]
+    def self.configure_provider: (Symbol | String name, ?settings: Hash[untyped, untyped], ?enabled: bool, ?priority: Integer, ?capabilities: Array[Symbol]?) -> ProviderConfiguration
+    def self.deliver: (to: String, message: String, ?provider: (Symbol | String)?, ?metadata: Hash[untyped, untyped], ?requirements: Array[Symbol]) -> Delivery
 
     VERSION: String
 
@@ -140,6 +142,14 @@ module Sms
 
     module Providers
       class TextBee < Provider
+        BASE_URL: String
+        SEND_PATH: String
+
+        def initialize: (configuration: ProviderConfiguration, ?http: HTTP::Client) -> void
+        def deliver: (Message message) -> Delivery
+      end
+
+      class Semaphore < Provider
         BASE_URL: String
         SEND_PATH: String
 

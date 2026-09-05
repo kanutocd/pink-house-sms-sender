@@ -16,3 +16,5 @@
   mapping, and credential redaction.
 - Added the TextBee adapter with API-key authentication, request and response
   mapping, and normalized provider error handling.
+- Added the Semaphore adapter with form-encoded request mapping,
+  authentication, accepted-result handling, and normalized provider errors.
