@@ -152,6 +152,20 @@ module Sms
         assert_empty plain.calls
       end
 
+      def test_emits_election_attempt_and_failover_events
+        first = fake_provider(:textbee, priority: 10, failure: Errors::Network.new(provider: :textbee))
+        second = fake_provider(:semaphore, priority: 1)
+        router = Router.new(registry: registry_with(first, second))
+
+        router.deliver(Message.new(to: "+1", body: "Hello"))
+
+        event_types = router.events.map { |event| event[:type] }
+
+        assert_equal %i[election attempt failover attempt], event_types
+        assert_equal :textbee, router.events[1][:provider]
+        assert_equal :semaphore, router.events[2][:to]
+      end
+
       def test_re_elects_recovered_provider_after_cooldown_without_flapping
         now = 0.0
         first = fake_provider(:textbee, priority: 10, failure: Errors::Network.new(provider: :textbee))
@@ -189,6 +203,27 @@ module Sms
         assert_equal 2, first.calls.length
         assert_equal 2, second.calls.length
         assert_equal :open, router.health(:textbee)[:circuit_state]
+      end
+
+      def test_does_not_emit_failover_when_attempt_limit_is_reached
+        first = fake_provider(:textbee, failure: Errors::Network.new(provider: :textbee))
+        router = Router.new(registry: registry_with(first))
+
+        router.deliver(Message.new(to: "+1", body: "Hello"), max_attempts: 1)
+
+        has_failover = router.events.any? { |event| event[:type] == :failover }
+
+        refute has_failover
+      end
+
+      def test_records_exhausted_failover_without_a_next_provider
+        first = fake_provider(:textbee, failure: Errors::Network.new(provider: :textbee))
+        router = Router.new(registry: registry_with(first))
+
+        delivery = router.deliver(Message.new(to: "+1", body: "Hello"), max_attempts: 2)
+
+        assert_equal :failed, delivery.status
+        assert_nil router.events.find { |event| event[:type] == :failover }[:to]
       end
 
       private

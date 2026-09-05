@@ -5,11 +5,13 @@ module Sms
     # Selects one eligible configured provider for a delivery.
     class Router
       # @param registry [ProviderRegistry] provider registry to route through
-      def initialize(registry: Sms::Sender.registry, circuit_options: {}, state_store: StateStore::Memory.new)
+      def initialize(registry: Sms::Sender.registry, circuit_options: {}, state_store: StateStore::Memory.new,
+                     observer: Observability::Memory.new)
         @registry = registry
         @circuit_options = circuit_options
         @state_store = state_store
-        @election = Election.new
+        @observer = observer
+        @election = Election.new(state_store: @state_store)
       end
 
       # Deliver a normalized message through the best eligible provider.
@@ -30,18 +32,34 @@ module Sms
         candidates.first(attempt_limit).each do |candidate|
           started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
           delivery = candidate.deliver(message)
+          previous_state = circuit_for(candidate).state
           circuit_for(candidate).record_success
+          if previous_state != circuit_for(candidate).state
+            emit(type: :circuit_transition, provider: candidate.name, from: previous_state,
+                 to: circuit_for(candidate).state)
+          end
           health_for(candidate).record_success(
             latency: elapsed_since(started_at), circuit_state: circuit_for(candidate).state
           )
+          emit(type: :attempt, provider: candidate.name, status: :accepted, latency: elapsed_since(started_at))
           return with_attempt(delivery, attempts, candidate.name, :accepted)
         rescue Errors::Base => e
+          previous_state = circuit_for(candidate).state
           circuit_for(candidate).record_failure(e)
+          if previous_state != circuit_for(candidate).state
+            emit(type: :circuit_transition, provider: candidate.name, from: previous_state,
+                 to: circuit_for(candidate).state)
+          end
           health_for(candidate).record_failure(
             latency: elapsed_since(started_at), error: e, circuit_state: circuit_for(candidate).state
           )
+          emit(type: :attempt, provider: candidate.name, status: :failed, error: e.category,
+               latency: elapsed_since(started_at))
           attempts << attempt_record(candidate.name, :failed, e)
           last_error = e
+          if e.failover? && attempts.length < attempt_limit
+            emit(type: :failover, from: candidate.name, to: candidates[attempts.length]&.name)
+          end
           raise unless e.failover?
         end
 
@@ -54,6 +72,11 @@ module Sms
         health_for(@registry.provider(name)).snapshot
       end
 
+      # @return [Array<Hash>] structured events emitted by this router
+      def events
+        @observer.events
+      end
+
       private
 
       def eligible_providers(name = nil, requirements: [])
@@ -61,6 +84,7 @@ module Sms
         selected = @election.rank(
           candidates, requirements: requirements, circuits: circuit_map(candidates), health: health_map(candidates)
         )
+        emit(type: :election, candidates: selected.map(&:name), selected: selected.first&.name)
         return selected unless selected.empty?
 
         raise Errors::ConfigurationError.new("no eligible provider is configured", category: :configuration)
@@ -94,6 +118,10 @@ module Sms
 
       def elapsed_since(started_at)
         Process.clock_gettime(Process::CLOCK_MONOTONIC) - started_at
+      end
+
+      def emit(event)
+        @observer.emit(event)
       end
 
       def attempt_record(provider, status, error = nil)

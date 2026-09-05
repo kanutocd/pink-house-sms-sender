@@ -41,5 +41,8 @@
   messages, provider configurations, and election filtering.
 - Added the process-local `StateStore::Memory` implementation for shared
   circuit, health, and election runtime state.
+- Added dependency-free structured observability events for elections,
+  attempts, failovers, and circuit transitions, with an in-memory event sink
+  and subscriber hooks.
 - Deferred Phase 17 additional-provider integrations until the core runtime
   and observability work are further established.

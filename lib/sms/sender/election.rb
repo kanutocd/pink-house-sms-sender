@@ -4,6 +4,11 @@ module Sms
   module Sender
     # Selects eligible providers using priority and lightweight health signals.
     class Election
+      # @param state_store [StateStore::Memory] election state persistence
+      def initialize(state_store: StateStore::Memory.new)
+        @state_store = state_store
+      end
+
       # Return providers in deterministic descending preference order.
       # @param providers [Array<Provider>] configured providers
       # @param requirements [Array<Symbol>] required message capabilities
@@ -11,9 +16,17 @@ module Sms
       # @param health [Hash<Symbol, Health>] provider health records
       # @return [Array<Provider>] eligible providers
       def rank(providers, requirements: [], circuits: {}, health: {})
-        providers.select { |provider| eligible?(provider, requirements, circuits) }
+        result = providers
+                 .select { |provider| eligible?(provider, requirements, circuits) }
                  .sort_by { |provider| election_key(provider, snapshot_for(health[provider.name])) }
                  .reverse
+        @state_store.write(:last_election, result.first&.name)
+        result
+      end
+
+      # @return [Symbol, nil] most recently preferred provider
+      def last_selection
+        @state_store.read(:last_election)
       end
 
       private

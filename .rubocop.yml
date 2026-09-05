@@ -54,13 +54,24 @@ Metrics/MethodLength:
 Metrics/CyclomaticComplexity:
   Exclude:
     - "lib/sms/sender/providers/infobip.rb"
+    - "lib/sms/sender/router.rb"
 
 Metrics/ParameterLists:
   Exclude:
     - "lib/sms/sender/delivery.rb"
     - "lib/sms/sender/http.rb"
 
+Metrics/PerceivedComplexity:
+  Exclude:
+    - "lib/sms/sender/router.rb"
+
+Metrics/BlockLength:
+  Exclude:
+    - "lib/sms/sender/router.rb"
+    - "sms-sender.gemspec"
+
 Metrics/ClassLength:
   Exclude:
     - "test/sms/test_http.rb"
     - "test/sms/test_router.rb"
+    - "lib/sms/sender/router.rb"

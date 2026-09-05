@@ -112,9 +112,10 @@ module Sms
     end
 
     class Router
-      def initialize: (?registry: ProviderRegistry, ?circuit_options: Hash[Symbol, untyped], ?state_store: StateStore::Memory) -> void
+      def initialize: (?registry: ProviderRegistry, ?circuit_options: Hash[Symbol, untyped], ?state_store: StateStore::Memory, ?observer: Observability::Memory) -> void
       def deliver: (Message message, ?provider: (Symbol | String)?, ?max_attempts: Integer?) -> Delivery
       def health: (Symbol | String name) -> Hash[Symbol, untyped]
+      def events: () -> Array[Hash[Symbol, untyped]]
     end
 
     class CircuitBreaker
@@ -139,7 +140,9 @@ module Sms
     end
 
     class Election
+      def initialize: (?state_store: StateStore::Memory) -> void
       def rank: (Array[Provider] providers, ?requirements: Array[Symbol], ?circuits: Hash[Symbol, CircuitBreaker], ?health: Hash[Symbol, Health]) -> Array[Provider]
+      def last_selection: () -> Symbol?
     end
 
     module StateStore
@@ -149,6 +152,16 @@ module Sms
         def write: (untyped key, untyped value) -> untyped
         def fetch: (untyped key) { () -> untyped } -> untyped
         def delete: (untyped key) -> untyped
+        def clear: () -> void
+      end
+    end
+
+    module Observability
+      class Memory
+        def initialize: () -> void
+        def emit: (Hash[Symbol, untyped] event) -> Hash[Symbol, untyped]
+        def subscribe: (?untyped subscriber) { () -> untyped } -> untyped
+        def events: () -> Array[Hash[Symbol, untyped]]
         def clear: () -> void
       end
     end

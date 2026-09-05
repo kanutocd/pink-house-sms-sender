@@ -20,7 +20,8 @@ retry/failover error classification, bounded failover, an in-memory circuit
 breaker, and provider health snapshots derived from real delivery attempts.
 It also provides a replaceable health-aware provider election policy with
 provider recovery after circuit cooldown, shared capability filtering for
-election, and process-local runtime state storage. The
+election, process-local runtime state storage, and dependency-free structured
+observability events. The
 remaining routing features are planned for subsequent phases.
 
 ## Installation
@@ -189,9 +190,10 @@ The implementation plan is organized as follows:
 13. Automatic election — complete
 14. Provider recovery — complete
 15. Capability filtering — complete
-16. State store — complete; observability remains
-17. Additional providers — deferred
-18. Production hardening
+16. State store — complete
+17. Observability — complete; additional providers remain deferred
+18. Additional providers — deferred
+19. Production hardening
 
 ## Contributing
 
