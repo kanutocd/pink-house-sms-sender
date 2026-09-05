@@ -29,6 +29,17 @@ module Sms
           assert_nil store.read(:one)
           assert_nil store.read(:two)
         end
+
+        def test_fetch_initializes_shared_state_once_under_concurrency
+          store = Memory.new
+          values = []
+          threads = 10.times.map do
+            Thread.new { values << store.fetch(:shared) { Object.new } }
+          end
+          threads.each(&:join)
+
+          assert_equal 1, values.map(&:object_id).uniq.length
+        end
       end
     end
   end

@@ -196,6 +196,13 @@ The implementation plan is organized as follows:
 19. Delivery receipts — complete at the provider-neutral event model level
 20. Production hardening
 
+### Compatibility and integration boundary
+
+The supported runtime is Ruby 3.2 and newer. Standard CI uses only injected
+HTTP transports and in-memory state; it never requires provider credentials,
+network access, or live SMS delivery. Provider-specific integration tests are
+opt-in and should be isolated from the normal `bundle exec rake` quality gate.
+
 ## Contributing
 
 Bug reports and pull requests are welcome at

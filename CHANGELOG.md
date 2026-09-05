@@ -46,5 +46,7 @@
   and subscriber hooks.
 - Added provider-neutral immutable delivery events and delivery-state updates
   for future webhook integrations.
+- Added concurrency coverage for atomic state initialization and documented
+  the Ruby compatibility and opt-in provider integration boundaries.
 - Deferred Phase 17 additional-provider integrations until the core runtime
   and observability work are further established.
