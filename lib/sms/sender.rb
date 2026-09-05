@@ -68,7 +68,7 @@ module Sms
 
       # @param catalog [Hash] SMS provider names mapped to adapter paths
       def initialize(catalog: DEFAULT_PROVIDERS)
-        super
+        super(catalog: catalog, default_capabilities: [:sms])
       end
 
       private
