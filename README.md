@@ -11,7 +11,7 @@ delivery results and errors.
 
 ## Status
 
-Phases 1–14 are implemented through the TextBee, Semaphore, Twilio, and Infobip adapters. The current release provides the message,
+Phases 1–16 are implemented through the TextBee, Semaphore, Twilio, and Infobip adapters. The current release provides the message,
 delivery, error, provider configuration, provider contract, supported-provider
 catalog, lazy provider loading, and an injectable standard-library HTTP
 transport, plus direct TextBee, Semaphore, Twilio, and Infobip HTTP delivery.
@@ -19,8 +19,8 @@ It also provides a basic priority-based delivery router, explicit
 retry/failover error classification, bounded failover, an in-memory circuit
 breaker, and provider health snapshots derived from real delivery attempts.
 It also provides a replaceable health-aware provider election policy with
-provider recovery after circuit cooldown, and shared capability filtering for
-election. The
+provider recovery after circuit cooldown, shared capability filtering for
+election, and process-local runtime state storage. The
 remaining routing features are planned for subsequent phases.
 
 ## Installation
@@ -188,8 +188,10 @@ The implementation plan is organized as follows:
 12. Provider health — complete
 13. Automatic election — complete
 14. Provider recovery — complete
-15. Capability filtering — complete; state storage and observability remain
-16. Production hardening
+15. Capability filtering — complete
+16. State store — complete; observability remains
+17. Additional providers — deferred
+18. Production hardening
 
 ## Contributing
 

@@ -5,11 +5,10 @@ module Sms
     # Selects one eligible configured provider for a delivery.
     class Router
       # @param registry [ProviderRegistry] provider registry to route through
-      def initialize(registry: Sms::Sender.registry, circuit_options: {})
+      def initialize(registry: Sms::Sender.registry, circuit_options: {}, state_store: StateStore::Memory.new)
         @registry = registry
         @circuit_options = circuit_options
-        @circuits = {}
-        @health = {}
+        @state_store = state_store
         @election = Election.new
       end
 
@@ -60,7 +59,7 @@ module Sms
       def eligible_providers(name = nil, requirements: [])
         candidates = name ? [@registry.provider(name)] : @registry.providers
         selected = @election.rank(
-          candidates, requirements: requirements, circuits: circuit_map(candidates), health: @health
+          candidates, requirements: requirements, circuits: circuit_map(candidates), health: health_map(candidates)
         )
         return selected unless selected.empty?
 
@@ -77,14 +76,20 @@ module Sms
         providers.to_h { |provider| [provider.name, circuit_for(provider)] }
       end
 
+      def health_map(providers)
+        providers.to_h { |provider| [provider.name, health_for(provider)] }
+      end
+
       def circuit_for(provider)
-        @circuits[provider.name] ||= CircuitBreaker.new(**@circuit_options)
+        @state_store.fetch([:circuit, provider.name]) { CircuitBreaker.new(**@circuit_options) }
       end
 
       def health_for(provider)
-        @health[provider.name] ||= Health.new(
-          observation_window: @circuit_options.fetch(:observation_window, CircuitBreaker::DEFAULT_OBSERVATION_WINDOW)
-        )
+        @state_store.fetch([:health, provider.name]) do
+          Health.new(
+            observation_window: @circuit_options.fetch(:observation_window, CircuitBreaker::DEFAULT_OBSERVATION_WINDOW)
+          )
+        end
       end
 
       def elapsed_since(started_at)

@@ -29,6 +29,7 @@ Metrics/AbcSize:
     - "lib/sms/sender/providers/infobip.rb"
     - "test/sms/test_infobip.rb"
     - "test/sms/test_router.rb"
+    - "test/sms/test_state_store.rb"
     - "lib/sms/sender/router.rb"
 
 Metrics/MethodLength:

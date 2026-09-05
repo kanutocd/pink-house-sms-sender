@@ -39,3 +39,7 @@
   stable preference, and failed-probe reopening.
 - Formalized the shared capability vocabulary and normalization used by
   messages, provider configurations, and election filtering.
+- Added the process-local `StateStore::Memory` implementation for shared
+  circuit, health, and election runtime state.
+- Deferred Phase 17 additional-provider integrations until the core runtime
+  and observability work are further established.

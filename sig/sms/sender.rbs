@@ -112,7 +112,7 @@ module Sms
     end
 
     class Router
-      def initialize: (?registry: ProviderRegistry, ?circuit_options: Hash[Symbol, untyped]) -> void
+      def initialize: (?registry: ProviderRegistry, ?circuit_options: Hash[Symbol, untyped], ?state_store: StateStore::Memory) -> void
       def deliver: (Message message, ?provider: (Symbol | String)?, ?max_attempts: Integer?) -> Delivery
       def health: (Symbol | String name) -> Hash[Symbol, untyped]
     end
@@ -140,6 +140,17 @@ module Sms
 
     class Election
       def rank: (Array[Provider] providers, ?requirements: Array[Symbol], ?circuits: Hash[Symbol, CircuitBreaker], ?health: Hash[Symbol, Health]) -> Array[Provider]
+    end
+
+    module StateStore
+      class Memory
+        def initialize: () -> void
+        def read: (untyped key) -> untyped
+        def write: (untyped key, untyped value) -> untyped
+        def fetch: (untyped key) { () -> untyped } -> untyped
+        def delete: (untyped key) -> untyped
+        def clear: () -> void
+      end
     end
 
     class ProviderRegistry
