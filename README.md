@@ -1,43 +1,160 @@
-# Sms::Sender
+# sms-sender
 
-TODO: Delete this and the text below, and describe your gem
+`sms-sender` is a Ruby gem for provider-neutral SMS delivery. It is designed
+to let applications use one domain API while provider adapters handle the
+details of individual HTTP APIs.
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/sms/sender`. To experiment with that code, run `bin/console` for an interactive prompt.
+The project is being built as one gem with thin, lazily loaded provider
+adapters. The planned runtime includes health-aware provider selection,
+controlled failover, circuit breaking, capability filtering, and normalized
+delivery results and errors.
+
+## Status
+
+Phase 1, the provider-neutral core domain, and the Phase 2 provider registry
+foundation are implemented. The current release provides the message,
+delivery, error, provider configuration, provider contract, supported-provider
+catalog, and lazy provider loading objects. Provider adapters and the
+high-level delivery router are planned for subsequent phases.
 
 ## Installation
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
+Add the gem to your application's Gemfile:
 
-Install the gem and add to the application's Gemfile by executing:
-
-```bash
-bundle add UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+```ruby
+gem "sms-sender"
 ```
 
-If bundler is not being used to manage dependencies, install the gem by executing:
+Then install it with Bundler:
 
 ```bash
-gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+bundle install
 ```
 
-## Usage
+The gem currently has no mandatory provider SDK dependencies. Provider
+integrations will use documented HTTP APIs directly.
 
-TODO: Write usage instructions here
+## Current usage
+
+The Phase 1 domain objects can be used to construct provider-neutral messages
+and configurations:
+
+```ruby
+require "sms_sender"
+
+message = Sms::Sender::Message.new(
+  to: "+639171234567",
+  body: "Your OTP is 123456",
+  requirements: [:unicode]
+)
+
+configuration = Sms::Sender::ProviderConfiguration.new(
+  name: :textbee,
+  settings: {
+    api_key: ENV.fetch("TEXTBEE_API_KEY")
+  },
+  priority: 10,
+  capabilities: [:sms, :unicode]
+)
+```
+
+`Message` and `ProviderConfiguration` are immutable after construction.
+Recipients and bodies are validated, provider capabilities and message
+requirements are normalized to symbols, and delivery results distinguish
+provider acceptance from confirmed handset delivery.
+
+Provider adapters implement the common contract:
+
+```ruby
+class MyProvider < Sms::Sender::Provider
+  def deliver(message)
+    # Translate `message` to the provider's HTTP API and return a
+    # Sms::Sender::Delivery result.
+  end
+end
+```
+
+The high-level `Sms::Sender.deliver` API will be introduced with the routing
+phases.
+
+The registry exposes the providers supported by the gem without loading their
+adapter implementations:
+
+```ruby
+Sms::Sender.providers
+# => [:textbee, :semaphore, :twilio, :infobip]
+```
+
+## Design principles
+
+- One repository and one gem for all supported providers.
+- Direct documented HTTP integrations instead of provider Ruby SDKs.
+- Lazy loading so unused providers and dependencies remain unloaded.
+- Thin adapters limited to configuration, authentication, HTTP mapping,
+  response parsing, and provider error mapping.
+- Provider-neutral routing, health, failover, and circuit-breaking behavior.
+- Explicit error classification so terminal request errors do not trigger
+  provider failover.
+- Provider acceptance is distinct from final handset delivery.
+- Process-local state initially, behind an abstraction for future shared state.
+
+The initial provider set is TextBee, Semaphore, Twilio, and Infobip. Telnyx,
+Vonage, and Plivo are potential later additions. AWS SNS is not part of the
+initial provider set.
 
 ## Development
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+After checking out the repository, install dependencies:
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+```bash
+bin/setup
+```
+
+Run the complete quality harness with:
+
+```bash
+bundle exec rake
+```
+
+This runs the test suite, RuboCop, RBS validation, and YARD documentation
+coverage checks. Normal tests do not require provider credentials or send
+real SMS messages.
+
+Other useful commands:
+
+```bash
+bundle exec rake test       # Run tests
+bundle exec rake rubocop   # Run RuboCop
+bundle exec rake rbs       # Validate RBS signatures
+bundle exec rake yard      # Generate API documentation
+bundle exec rake build     # Build the gem
+bin/console                # Open a Ruby console
+```
+
+## Roadmap
+
+The implementation plan is organized as follows:
+
+1. Core domain objects and contracts — complete
+2. Provider registry and lazy loading — current phase
+3. Internal HTTP transport
+4. TextBee, Semaphore, Twilio, and Infobip adapters
+5. Router, failure classification, and controlled failover
+6. Circuit breaking, health tracking, and automatic election
+7. Capability filtering, state storage, and observability
+8. Additional providers and production hardening
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/sms-sender. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/[USERNAME]/sms-sender/blob/main/CODE_OF_CONDUCT.md).
+Bug reports and pull requests are welcome at
+[github.com/kanutocd/sms-sender](https://github.com/kanutocd/sms-sender).
+
+Changes should preserve the provider-neutral core, keep adapters thin, and
+include focused tests. Meaningful user, operator, integration, tooling, or
+architectural changes should be recorded in `CHANGELOG.md` under `Unreleased`.
 
 ## License
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+This project is available under the [MIT License](LICENSE.txt).
 
-## Code of Conduct
-
-Everyone interacting in the Sms::Sender project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/sms-sender/blob/main/CODE_OF_CONDUCT.md).
+See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for community guidelines.

@@ -33,7 +33,7 @@ task "yard:coverage" => :yard do
   puts output
   coverage = output[/([0-9]+(?:\.[0-9]+)?)% documented/, 1]&.to_f
   abort "Could not determine YARD documentation coverage" unless coverage
-  abort "YARD documentation coverage #{coverage}% is below 90%" if coverage < 90.0
+  abort "YARD documentation coverage #{coverage}% is below 100%" if coverage < 100.0
 end
 
 desc "Run the test and lint quality gates"

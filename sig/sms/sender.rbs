@@ -3,6 +3,9 @@ module Sms
     class Error < StandardError
     end
 
+    def self.registry: () -> ProviderRegistry
+    def self.providers: () -> Array[Symbol]
+
     VERSION: String
 
     module Errors
@@ -46,6 +49,9 @@ module Sms
       end
 
       class Unknown < Base
+      end
+
+      class ConfigurationError < Base
       end
     end
 
@@ -92,6 +98,18 @@ module Sms
       def name: () -> Symbol
       def capabilities: () -> Array[Symbol]
       def deliver: (untyped) -> untyped
+    end
+
+    class ProviderRegistry
+      DEFAULT_PROVIDERS: Hash[Symbol, String]
+
+      def initialize: (?catalog: Hash[Symbol | String, String]) -> void
+      def supported: () -> Array[Symbol]
+      def configured: () -> Array[Symbol]
+      def register: (Symbol | String name, loader: ^() -> Class, ?capabilities: Array[Symbol]) -> Symbol
+      def configure: (Symbol | String name, ?settings: Hash[untyped, untyped], ?enabled: bool, ?priority: Integer, ?capabilities: Array[Symbol]?) -> ProviderConfiguration
+      def provider: (Symbol | String name) -> Provider
+      def providers: () -> Array[Provider]
     end
   end
 end

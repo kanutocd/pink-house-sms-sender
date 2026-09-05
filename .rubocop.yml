@@ -18,12 +18,14 @@ Minitest/MultipleAssertions:
 Metrics/AbcSize:
   Exclude:
     - "test/sms/test_delivery.rb"
+    - "test/sms/test_provider_registry.rb"
 
 Metrics/MethodLength:
   Exclude:
     - "test/sms/test_delivery.rb"
     - "test/sms/test_message.rb"
     - "test/sms/test_provider_configuration.rb"
+    - "test/sms/test_provider_registry.rb"
 
 Metrics/ParameterLists:
   Exclude:

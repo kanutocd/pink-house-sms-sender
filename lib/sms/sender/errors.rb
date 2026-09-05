@@ -68,6 +68,9 @@ module Sms
 
       # An error that could not be mapped to a more specific category.
       class Unknown < Base; end
+
+      # A provider or provider configuration cannot be loaded or validated.
+      class ConfigurationError < Base; end
     end
   end
 end
