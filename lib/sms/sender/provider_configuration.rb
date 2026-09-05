@@ -61,11 +61,7 @@ module Sms
       end
 
       def normalize_capabilities(value)
-        raise ArgumentError, "capabilities must be an Array" unless value.is_a?(Array)
-
-        value.map(&:to_sym).uniq.freeze
-      rescue NoMethodError
-        raise ArgumentError, "capabilities must contain symbolizable values"
+        Capabilities.normalize(value)
       end
     end
   end

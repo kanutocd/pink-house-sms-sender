@@ -57,6 +57,7 @@ module Sms
 end
 
 require_relative "sender/errors"
+require_relative "sender/capabilities"
 require_relative "sender/message"
 require_relative "sender/delivery"
 require_relative "sender/provider_configuration"

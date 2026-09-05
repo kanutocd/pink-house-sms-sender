@@ -53,11 +53,7 @@ module Sms
       end
 
       def normalize_requirements(value)
-        raise ArgumentError, "requirements must be an Array" unless value.is_a?(Array)
-
-        value.map(&:to_sym).uniq.freeze
-      rescue NoMethodError
-        raise ArgumentError, "requirements must contain symbolizable values"
+        Capabilities.normalize(value)
       end
     end
   end

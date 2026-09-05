@@ -3,6 +3,12 @@ module Sms
     class Error < StandardError
     end
 
+    module Capabilities
+      KNOWN: Array[Symbol]
+
+      def self.normalize: (Array[Symbol | String] values) -> Array[Symbol]
+    end
+
     def self.registry: () -> ProviderRegistry
     def self.providers: () -> Array[Symbol]
     def self.configure_provider: (Symbol | String name, ?settings: Hash[untyped, untyped], ?enabled: bool, ?priority: Integer, ?capabilities: Array[Symbol]?) -> ProviderConfiguration

@@ -37,5 +37,5 @@
   circuit eligibility, health-aware scoring, and deterministic ordering.
 - Added provider recovery verification for cooldown probes, re-election,
   stable preference, and failed-probe reopening.
-- Added a replaceable provider election policy with capability filtering,
-  circuit eligibility, health-aware scoring, and deterministic ordering.
+- Formalized the shared capability vocabulary and normalization used by
+  messages, provider configurations, and election filtering.

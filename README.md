@@ -19,7 +19,8 @@ It also provides a basic priority-based delivery router, explicit
 retry/failover error classification, bounded failover, an in-memory circuit
 breaker, and provider health snapshots derived from real delivery attempts.
 It also provides a replaceable health-aware provider election policy with
-provider recovery after circuit cooldown. The
+provider recovery after circuit cooldown, and shared capability filtering for
+election. The
 remaining routing features are planned for subsequent phases.
 
 ## Installation
@@ -186,8 +187,8 @@ The implementation plan is organized as follows:
 11. Circuit breaker — complete
 12. Provider health — complete
 13. Automatic election — complete
-14. Provider recovery — complete; capability filtering remains
-15. Capability filtering, state storage, and observability
+14. Provider recovery — complete
+15. Capability filtering — complete; state storage and observability remain
 16. Production hardening
 
 ## Contributing
