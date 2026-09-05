@@ -49,6 +49,57 @@ module Sms
         end
       end
 
+      def test_configures_selected_providers_and_default_from_environment
+        with_fresh_registry do
+          Sender.registry.register(:first, loader: -> { FacadeProvider })
+          Sender.registry.register(:second, loader: -> { FacadeProvider })
+
+          Sender.configure_from_env(
+            env: {
+              "SMS_SENDER_PROVIDERS" => "first, second",
+              "SMS_SENDER_DEFAULT_PROVIDER" => "second",
+              "SMS_SENDER_FIRST_SETTINGS" => '{"token":"secret"}'
+            }
+          )
+
+          assert_equal %i[first second], Sender.registry.configured
+          priorities = Sender.registry.providers.to_h { |provider| [provider.name, provider.configuration.priority] }
+
+          assert_operator priorities[:second], :>, priorities[:first]
+          assert_equal "secret", Sender.registry.provider(:first).configuration[:token]
+        end
+      end
+
+      def test_rejects_invalid_environment_provider_selection
+        with_fresh_registry do
+          Sender.registry.register(:first, loader: -> { FacadeProvider })
+
+          assert_raises(ArgumentError) do
+            Sender.configure_from_env(
+              env: { "SMS_SENDER_PROVIDERS" => "first", "SMS_SENDER_DEFAULT_PROVIDER" => "other" }
+            )
+          end
+          assert_raises(ArgumentError) do
+            Sender.configure_from_env(
+              env: {
+                "SMS_SENDER_PROVIDERS" => "first",
+                "SMS_SENDER_DEFAULT_PROVIDER" => "first",
+                "SMS_SENDER_FIRST_SETTINGS" => "not-json"
+              }
+            )
+          end
+          assert_raises(ArgumentError) do
+            Sender.configure_from_env(
+              env: {
+                "SMS_SENDER_PROVIDERS" => "first",
+                "SMS_SENDER_DEFAULT_PROVIDER" => "first",
+                "SMS_SENDER_FIRST_SETTINGS" => "[]"
+              }
+            )
+          end
+        end
+      end
+
       private
 
       def with_fresh_registry

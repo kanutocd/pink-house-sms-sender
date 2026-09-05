@@ -2,6 +2,7 @@
 
 require_relative "sender/version"
 require "sender/core"
+require "json"
 
 # Top-level namespace for SMS-related libraries.
 module Sms
@@ -105,6 +106,21 @@ module Sms
         )
       end
 
+      # Configure selected providers and their preferred default from an env-like object.
+      # @param env [#fetch, #[]] environment values
+      # @return [ProviderRegistry] configured SMS registry
+      def configure_from_env(env: ENV)
+        names = env.fetch("SMS_SENDER_PROVIDERS").split(",").map(&:strip).reject(&:empty?)
+        default = env.fetch("SMS_SENDER_DEFAULT_PROVIDER").strip
+        raise ArgumentError, "default provider must be selected" unless names.include?(default)
+
+        names.each_with_index do |name, index|
+          priority = name == default ? names.length + 1 : names.length - index
+          configure_provider(name, settings: environment_settings(env, name), priority: priority)
+        end
+        registry
+      end
+
       # Deliver an SMS through the configured router.
       # @param to [String] recipient address
       # @param message [String] SMS body
@@ -121,6 +137,18 @@ module Sms
       end
 
       private
+
+      def environment_settings(env, name)
+        raw = env["SMS_SENDER_#{name.upcase}_SETTINGS"]
+        return {} if raw.nil? || raw.strip.empty?
+
+        settings = JSON.parse(raw)
+        raise ArgumentError, "provider settings must be a JSON object" unless settings.is_a?(Hash)
+
+        settings.transform_keys(&:to_sym)
+      rescue JSON::ParserError => e
+        raise ArgumentError, "provider settings must contain valid JSON: #{e.message}"
+      end
 
       def build_registry
         ProviderRegistry.new

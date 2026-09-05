@@ -12,6 +12,7 @@ module Sms
     def self.registry: () -> ProviderRegistry
     def self.providers: () -> Array[Symbol]
     def self.configure_provider: (Symbol | String name, ?settings: Hash[untyped, untyped], ?enabled: bool, ?priority: Integer, ?capabilities: Array[Symbol]?) -> ProviderConfiguration
+    def self.configure_from_env: (?env: untyped) -> ProviderRegistry
     def self.deliver: (to: String, message: String, ?provider: (Symbol | String)?, ?metadata: Hash[untyped, untyped], ?requirements: Array[Symbol]) -> Delivery
 
     VERSION: String
