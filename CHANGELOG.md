@@ -20,3 +20,5 @@
   authentication, accepted-result handling, and normalized provider errors.
 - Added the Twilio adapter with Basic authentication, form-encoded message
   submission, accepted-result handling, and normalized provider errors.
+- Added the Infobip adapter with API-key authentication, advanced SMS JSON
+  request mapping, accepted-result handling, and normalized provider errors.

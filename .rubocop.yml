@@ -26,6 +26,8 @@ Metrics/AbcSize:
     - "test/sms/test_sender_api.rb"
     - "lib/sms/sender/providers/semaphore.rb"
     - "test/sms/test_semaphore.rb"
+    - "lib/sms/sender/providers/infobip.rb"
+    - "test/sms/test_infobip.rb"
 
 Metrics/MethodLength:
   Exclude:
@@ -41,6 +43,12 @@ Metrics/MethodLength:
     - "test/sms/test_sender_api.rb"
     - "lib/sms/sender/providers/semaphore.rb"
     - "test/sms/test_semaphore.rb"
+    - "lib/sms/sender/providers/infobip.rb"
+    - "test/sms/test_infobip.rb"
+
+Metrics/CyclomaticComplexity:
+  Exclude:
+    - "lib/sms/sender/providers/infobip.rb"
 
 Metrics/ParameterLists:
   Exclude:

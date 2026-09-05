@@ -164,6 +164,14 @@ module Sms
         def initialize: (configuration: ProviderConfiguration, ?http: HTTP::Client) -> void
         def deliver: (Message message) -> Delivery
       end
+
+      class Infobip < Provider
+        BASE_URL: String
+        SEND_PATH: String
+
+        def initialize: (configuration: ProviderConfiguration, ?http: HTTP::Client) -> void
+        def deliver: (Message message) -> Delivery
+      end
     end
   end
 end
