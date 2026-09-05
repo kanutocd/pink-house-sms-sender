@@ -11,6 +11,7 @@ module Sms
 
     def self.registry: () -> ProviderRegistry
     def self.providers: () -> Array[Symbol]
+    def self.provider_metadata: (Symbol | String name) -> Hash[Symbol, untyped]
     def self.configure_provider: (Symbol | String name, ?settings: Hash[untyped, untyped], ?enabled: bool, ?priority: Integer, ?capabilities: Array[Symbol]?) -> ProviderConfiguration
     def self.configure_from_env: (?env: untyped) -> ProviderRegistry
     def self.deliver: (to: String, message: String, ?provider: (Symbol | String)?, ?metadata: Hash[untyped, untyped], ?requirements: Array[Symbol]) -> Delivery
@@ -180,9 +181,9 @@ module Sms
     end
 
     class ProviderRegistry
-      DEFAULT_PROVIDERS: Hash[Symbol, String]
+      DEFAULT_PROVIDERS: Hash[Symbol, untyped]
 
-      def initialize: (?catalog: Hash[Symbol | String, String]) -> void
+      def initialize: (?catalog: Hash[Symbol | String, untyped]) -> void
       def supported: () -> Array[Symbol]
       def configured: () -> Array[Symbol]
       def register: (Symbol | String name, loader: ^() -> Class, ?capabilities: Array[Symbol]) -> Symbol

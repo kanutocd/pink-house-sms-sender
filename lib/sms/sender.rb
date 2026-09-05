@@ -61,10 +61,10 @@ module Sms
     class ProviderRegistry < ::Sender::Core::ProviderRegistry
       # SMS provider adapter paths included in the gem.
       DEFAULT_PROVIDERS = {
-        textbee: "sms/sender/providers/text_bee",
-        semaphore: "sms/sender/providers/semaphore",
-        twilio: "sms/sender/providers/twilio",
-        infobip: "sms/sender/providers/infobip"
+        textbee: { path: "sms/sender/providers/text_bee", support_level: :supported },
+        semaphore: { path: "sms/sender/providers/semaphore", support_level: :experimental },
+        twilio: { path: "sms/sender/providers/twilio", support_level: :experimental },
+        infobip: { path: "sms/sender/providers/infobip", support_level: :supported }
       }.freeze
 
       # @param catalog [Hash] SMS provider names mapped to adapter paths
@@ -92,6 +92,11 @@ module Sms
       # @return [Array<Symbol>] providers supported by the gem
       def providers
         registry.supported
+      end
+
+      # @return [Hash] advisory metadata for a registered SMS provider
+      def provider_metadata(name)
+        registry.provider_metadata(name)
       end
 
       # Configure one provider for delivery.

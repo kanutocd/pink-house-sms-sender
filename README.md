@@ -46,6 +46,8 @@ SMS_SENDER_TEXTBEE_SETTINGS='{"api_key":"...","device_id":"..."}'
 
 Call `Sms::Sender.configure_from_env` during application boot. Each provider's
 `*_SETTINGS` value is a JSON object whose keys match that adapter's settings.
+Provider metadata includes an advisory `support_level`; it is informational
+only and does not prevent use of experimental or deprecated providers.
 
 ## Compatibility boundary
 

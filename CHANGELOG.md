@@ -2,6 +2,8 @@
 
 ### Added
 
+- Identify catalog providers with advisory `support_level` metadata; values are
+  informational and never prevent provider use.
 - Add the `Sms::Sender` API backed by shared `sender-core` contracts while
   preserving legacy require paths.
 - Add provider configuration, lazy loading, capability filtering, and
