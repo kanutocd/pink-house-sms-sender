@@ -16,7 +16,7 @@ module Sms
 
       # Provider adapter paths included in the initial release.
       DEFAULT_PROVIDERS = {
-        textbee: "sms/sender/providers/textbee",
+        textbee: "sms/sender/providers/text_bee",
         semaphore: "sms/sender/providers/semaphore",
         twilio: "sms/sender/providers/twilio",
         infobip: "sms/sender/providers/infobip"

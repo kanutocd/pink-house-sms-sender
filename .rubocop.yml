@@ -21,6 +21,7 @@ Metrics/AbcSize:
     - "test/sms/test_provider_registry.rb"
     - "lib/sms/sender/http.rb"
     - "test/sms/test_http.rb"
+    - "test/sms/test_text_bee.rb"
 
 Metrics/MethodLength:
   Exclude:
@@ -30,6 +31,8 @@ Metrics/MethodLength:
     - "test/sms/test_provider_registry.rb"
     - "lib/sms/sender/http.rb"
     - "test/sms/test_http.rb"
+    - "lib/sms/sender/providers/text_bee.rb"
+    - "test/sms/test_text_bee.rb"
 
 Metrics/ParameterLists:
   Exclude:

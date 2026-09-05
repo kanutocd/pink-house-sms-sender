@@ -71,14 +71,14 @@ module Sms
         assert_raises(ArgumentError) { registry.register(:bad, loader: -> { FakeProvider }, capabilities: [nil]) }
       end
 
-      def test_requires_configuration_and_reports_missing_adapter
+      def test_requires_configuration_and_loads_textbee_adapter
         registry = ProviderRegistry.new
         assert_raises(Errors::ConfigurationError) { registry.provider(:textbee) }
 
-        registry.configure(:textbee)
-        error = assert_raises(Errors::ConfigurationError) { registry.provider(:textbee) }
+        registry.configure(:textbee, settings: { api_key: "secret" })
+        provider = registry.provider(:textbee)
 
-        assert_match(/could not load provider textbee/, error.message)
+        assert_instance_of Providers::TextBee, provider
       end
 
       def test_rejects_loader_that_does_not_return_a_class
@@ -87,6 +87,16 @@ module Sms
         registry.configure(:invalid)
 
         assert_raises(Errors::ConfigurationError) { registry.provider(:invalid) }
+      end
+
+      def test_wraps_missing_adapter_load_errors
+        registry = ProviderRegistry.new(catalog: {})
+        registry.register(:missing, loader: -> { raise LoadError, "missing dependency" })
+        registry.configure(:missing)
+
+        error = assert_raises(Errors::ConfigurationError) { registry.provider(:missing) }
+
+        assert_match(/could not load provider missing/, error.message)
       end
     end
   end

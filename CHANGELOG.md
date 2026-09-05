@@ -14,3 +14,5 @@
 - Added the injectable standard-library HTTP transport with response
   normalization, JSON serialization, timeout handling, transport error
   mapping, and credential redaction.
+- Added the TextBee adapter with API-key authentication, request and response
+  mapping, and normalized provider error handling.
