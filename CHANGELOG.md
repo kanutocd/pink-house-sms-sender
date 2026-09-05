@@ -27,3 +27,5 @@
 - Made retry and provider-failover classification explicit for normalized
   errors, distinguishing transient transport failures from terminal request
   and provider-configuration failures.
+- Added bounded provider failover with deterministic ordering, terminal-error
+  short-circuiting, and delivery attempt records.

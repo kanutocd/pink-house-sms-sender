@@ -47,10 +47,12 @@ module Sms
 
       def test_error_preserves_provider_and_defaults_category
         error = Errors::Timeout.new(provider: :twilio)
+        anonymous_error = Class.new(Errors::Base).new
 
         assert_kind_of Error, error
-        assert_equal :unknown, error.category
+        assert_equal :timeout, error.category
         assert_equal :twilio, error.provider
+        assert_equal :unknown, anonymous_error.category
       end
 
       private

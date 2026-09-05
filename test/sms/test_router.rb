@@ -5,13 +5,15 @@ require "test_helper"
 module Sms
   module Sender
     class TestRouter < Minitest::Test
-      FakeProvider = Struct.new(:configuration, :calls) do
+      FakeProvider = Struct.new(:configuration, :calls, :failure) do
         def name
           configuration.name
         end
 
         def deliver(message)
           calls << message
+          raise failure if failure
+
           Delivery.new(status: :accepted, provider: name, provider_message_id: "id")
         end
       end
@@ -70,11 +72,57 @@ module Sms
         end
       end
 
+      def test_fails_over_on_retryable_error_and_records_attempts
+        first = fake_provider(:textbee, priority: 10, failure: Errors::Network.new(provider: :textbee))
+        second = fake_provider(:semaphore, priority: 1)
+
+        delivery = Router.new(registry: registry_with(first, second)).deliver(Message.new(to: "+1", body: "Hello"))
+
+        assert_equal :semaphore, delivery.provider
+        providers = delivery.attempts.map { |attempt| attempt[:provider] }
+        statuses = delivery.attempts.map { |attempt| attempt[:status] }
+
+        assert_equal %i[textbee semaphore], providers
+        assert_equal %i[failed accepted], statuses
+        assert_equal :network, delivery.attempts.first[:error]
+      end
+
+      def test_does_not_fail_over_terminal_errors
+        first = fake_provider(:textbee, priority: 10, failure: Errors::InvalidRecipient.new(provider: :textbee))
+        second = fake_provider(:semaphore, priority: 1)
+
+        assert_raises(Errors::InvalidRecipient) do
+          Router.new(registry: registry_with(first, second)).deliver(Message.new(to: "+1", body: "Hello"))
+        end
+        assert_empty second.calls
+      end
+
+      def test_stops_at_max_attempts_and_returns_failed_delivery
+        first = fake_provider(:textbee, priority: 10, failure: Errors::Timeout.new(provider: :textbee))
+        second = fake_provider(:semaphore, priority: 1, failure: Errors::ProviderUnavailable.new(provider: :semaphore))
+
+        delivery = Router.new(registry: registry_with(first, second)).deliver(
+          Message.new(to: "+1", body: "Hello"), max_attempts: 2
+        )
+
+        assert_equal :failed, delivery.status
+        assert_equal :semaphore, delivery.provider
+        assert_equal :provider_unavailable, delivery.error.category
+        assert_equal 2, delivery.attempts.length
+      end
+
+      def test_rejects_invalid_max_attempts
+        provider = fake_provider(:textbee)
+        router = Router.new(registry: registry_with(provider))
+
+        assert_raises(ArgumentError) { router.deliver(Message.new(to: "+1", body: "Hello"), max_attempts: 0) }
+      end
+
       private
 
-      def fake_provider(name, priority: 0, enabled: true)
+      def fake_provider(name, priority: 0, enabled: true, failure: nil)
         configuration = ProviderConfiguration.new(name: name, priority: priority, enabled: enabled)
-        FakeProvider.new(configuration, [])
+        FakeProvider.new(configuration, [], failure)
       end
 
       def registry_with(*providers)

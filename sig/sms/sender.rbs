@@ -18,7 +18,7 @@ module Sms
         attr_reader category: Symbol
         attr_reader provider: Symbol?
 
-        def initialize: (?String?, ?category: Symbol, ?provider: Symbol?) -> void
+        def initialize: (?String?, ?category: Symbol?, ?provider: Symbol?) -> void
         def retryable?: () -> bool
         def failover?: () -> bool
       end
@@ -107,7 +107,7 @@ module Sms
 
     class Router
       def initialize: (?registry: ProviderRegistry) -> void
-      def deliver: (Message message, ?provider: (Symbol | String)?) -> Delivery
+      def deliver: (Message message, ?provider: (Symbol | String)?, ?max_attempts: Integer?) -> Delivery
     end
 
     class ProviderRegistry

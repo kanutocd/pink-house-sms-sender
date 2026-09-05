@@ -17,14 +17,20 @@ module Sms
         # @param message [String] safe error message
         # @param category [Symbol] normalized error category
         # @param provider [Symbol, nil] provider associated with the error
-        def initialize(message = nil, category: :unknown, provider: nil)
-          @category = category.to_sym
+        def initialize(message = nil, category: nil, provider: nil)
+          @category = (category || inferred_category).to_sym
           @provider = provider&.to_sym
           super(message || category.to_s)
         end
 
         # @return [Symbol, nil] associated provider
         attr_reader :provider
+
+        # @return [Symbol] category inferred from the concrete error class
+        def inferred_category
+          name = self.class.name&.split("::")&.last
+          name ? name.gsub(/([a-z])([A-Z])/, '\\1_\\2').downcase.to_sym : :unknown
+        end
 
         # @return [Boolean] whether this error can be retried
         def retryable?
