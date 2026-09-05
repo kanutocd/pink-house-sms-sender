@@ -11,4 +11,6 @@
   architecture, development, and roadmap documentation.
 - Added the provider registry with the initial provider catalog,
   explicit configuration, and lazy adapter loading.
-
+- Added the injectable standard-library HTTP transport with response
+  normalization, JSON serialization, timeout handling, transport error
+  mapping, and credential redaction.

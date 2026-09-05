@@ -111,5 +111,31 @@ module Sms
       def provider: (Symbol | String name) -> Provider
       def providers: () -> Array[Provider]
     end
+
+    module HTTP
+      class Response
+        attr_reader status: Integer
+        attr_reader headers: Hash[String, String]
+        attr_reader body: String
+
+        def initialize: (status: Integer, ?headers: Hash[untyped, untyped], ?body: untyped) -> void
+        def successful?: () -> bool
+      end
+
+      class NetHttpTransport
+        def initialize: (?http_factory: ^(URI::Generic) -> untyped) -> void
+        def call: (method: Symbol | String, url: String, headers: Hash[String, String], body: String?, open_timeout: Numeric, read_timeout: Numeric, write_timeout: Numeric) -> Response
+      end
+
+      class Client
+        DEFAULT_OPEN_TIMEOUT: Integer
+        DEFAULT_READ_TIMEOUT: Integer
+        DEFAULT_WRITE_TIMEOUT: Integer
+
+        def initialize: (?transport: untyped, ?open_timeout: Numeric, ?read_timeout: Numeric, ?write_timeout: Numeric, ?total_timeout: Numeric?) -> void
+        def request: (Symbol | String method, String url, ?headers: Hash[untyped, untyped], ?body: String | Hash[untyped, untyped]?) -> Response
+        def redacted_headers: (Hash[untyped, untyped] headers) -> Hash[String, String]
+      end
+    end
   end
 end
