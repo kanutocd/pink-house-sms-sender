@@ -132,6 +132,10 @@ module Sms
       def snapshot: () -> Hash[Symbol, untyped]
     end
 
+    class Election
+      def rank: (Array[Provider] providers, ?requirements: Array[Symbol], ?circuits: Hash[Symbol, CircuitBreaker], ?health: Hash[Symbol, Health]) -> Array[Provider]
+    end
+
     class ProviderRegistry
       DEFAULT_PROVIDERS: Hash[Symbol, String]
 

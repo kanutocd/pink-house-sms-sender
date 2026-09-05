@@ -33,3 +33,9 @@
   observation windows, cooldowns, and controlled half-open probes.
 - Added in-memory provider health snapshots derived from delivery attempts,
   including recent outcomes, consecutive failures, latency, and circuit state.
+- Added a replaceable provider election policy with capability filtering,
+  circuit eligibility, health-aware scoring, and deterministic ordering.
+- Added provider recovery verification for cooldown probes, re-election,
+  stable preference, and failed-probe reopening.
+- Added a replaceable provider election policy with capability filtering,
+  circuit eligibility, health-aware scoring, and deterministic ordering.

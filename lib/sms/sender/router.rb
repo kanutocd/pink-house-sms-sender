@@ -10,6 +10,7 @@ module Sms
         @circuit_options = circuit_options
         @circuits = {}
         @health = {}
+        @election = Election.new
       end
 
       # Deliver a normalized message through the best eligible provider.
@@ -22,7 +23,7 @@ module Sms
       # @return [Delivery] provider-neutral delivery result
       def deliver(message, provider: nil, max_attempts: nil)
         validate_message(message)
-        candidates = eligible_providers(provider)
+        candidates = eligible_providers(provider, requirements: message.requirements)
         attempt_limit = validate_max_attempts(max_attempts || candidates.length)
         attempts = []
         last_error = nil
@@ -56,10 +57,11 @@ module Sms
 
       private
 
-      def eligible_providers(name = nil)
+      def eligible_providers(name = nil, requirements: [])
         candidates = name ? [@registry.provider(name)] : @registry.providers
-        selected = candidates.select { |item| item.configuration.enabled? && circuit_for(item).allow? }
-                             .sort { |left, right| provider_order(right) <=> provider_order(left) }
+        selected = @election.rank(
+          candidates, requirements: requirements, circuits: circuit_map(candidates), health: @health
+        )
         return selected unless selected.empty?
 
         raise Errors::ConfigurationError.new("no eligible provider is configured", category: :configuration)
@@ -71,8 +73,8 @@ module Sms
         raise ArgumentError, "max_attempts must be a positive Integer"
       end
 
-      def provider_order(provider)
-        [provider.configuration.priority, provider.name.to_s]
+      def circuit_map(providers)
+        providers.to_h { |provider| [provider.name, circuit_for(provider)] }
       end
 
       def circuit_for(provider)

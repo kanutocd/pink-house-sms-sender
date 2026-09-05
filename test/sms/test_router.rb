@@ -10,6 +10,10 @@ module Sms
           configuration.name
         end
 
+        def capabilities
+          configuration.capabilities
+        end
+
         def deliver(message)
           calls << message
           raise failure if failure
@@ -137,10 +141,61 @@ module Sms
         assert_equal 1, first.calls.length
       end
 
+      def test_routes_only_to_provider_matching_message_requirements
+        unicode = fake_provider(:textbee, capabilities: %i[sms unicode])
+        plain = fake_provider(:semaphore, capabilities: [:sms])
+        router = Router.new(registry: registry_with(unicode, plain))
+
+        delivery = router.deliver(Message.new(to: "+1", body: "Hello", requirements: [:unicode]))
+
+        assert_equal :textbee, delivery.provider
+        assert_empty plain.calls
+      end
+
+      def test_re_elects_recovered_provider_after_cooldown_without_flapping
+        now = 0.0
+        first = fake_provider(:textbee, priority: 10, failure: Errors::Network.new(provider: :textbee))
+        second = fake_provider(:semaphore, priority: 1)
+        router = Router.new(
+          registry: registry_with(first, second),
+          circuit_options: { failure_threshold: 1, open_cooldown: 5, clock: -> { now } }
+        )
+        message = Message.new(to: "+1", body: "Hello")
+
+        assert_equal :semaphore, router.deliver(message).provider
+        now = 5
+        first.failure = nil
+
+        assert_equal :textbee, router.deliver(message).provider
+        assert_equal :textbee, router.deliver(message).provider
+        assert_equal 1, second.calls.length
+      end
+
+      def test_failed_recovery_probe_reopens_circuit_and_fails_over
+        now = 0.0
+        first = fake_provider(:textbee, priority: 10, failure: Errors::Network.new(provider: :textbee))
+        second = fake_provider(:semaphore, priority: 1)
+        router = Router.new(
+          registry: registry_with(first, second),
+          circuit_options: { failure_threshold: 1, open_cooldown: 5, clock: -> { now } }
+        )
+        message = Message.new(to: "+1", body: "Hello")
+
+        router.deliver(message)
+        now = 5
+        delivery = router.deliver(message)
+
+        assert_equal :semaphore, delivery.provider
+        assert_equal 2, first.calls.length
+        assert_equal 2, second.calls.length
+        assert_equal :open, router.health(:textbee)[:circuit_state]
+      end
+
       private
 
-      def fake_provider(name, priority: 0, enabled: true, failure: nil)
-        configuration = ProviderConfiguration.new(name: name, priority: priority, enabled: enabled)
+      def fake_provider(name, priority: 0, enabled: true, failure: nil, capabilities: [:sms])
+        configuration = ProviderConfiguration.new(name: name, priority: priority, enabled: enabled,
+                                                  capabilities: capabilities)
         FakeProvider.new(configuration, [], failure)
       end
 
