@@ -1,57 +1,24 @@
 ## [Unreleased]
 
-- Start wiring `sms-sender` to the extracted `sender-core` gem and
-  exposing shared contracts through the existing `Sms::Sender` API.
-- Preserve SMS router defaults and legacy shared-file require paths while
-  delegating shared runtime behavior to `sender-core`.
+### Added
 
-- Added the `bundle exec rake` quality harness covering tests, RuboCop, RBS,
-  and YARD documentation coverage.
-- Populated gem metadata and publishing configuration in `sms-sender.gemspec`.
-- Added project guidance requiring meaningful changes to be recorded in the
-  changelog.
-- Added the Phase 1 provider-neutral core domain: messages, deliveries,
-  normalized errors, provider configuration, and the provider contract.
-- Replaced the generated README template with current installation, usage,
-  architecture, development, and roadmap documentation.
-- Added the provider registry with the initial provider catalog,
-  explicit configuration, and lazy adapter loading.
-- Added the injectable standard-library HTTP transport with response
-  normalization, JSON serialization, timeout handling, transport error
-  mapping, and credential redaction.
-- Added the TextBee adapter with API-key authentication, request and response
-  mapping, and normalized provider error handling.
-- Added the Semaphore adapter with form-encoded request mapping,
-  authentication, accepted-result handling, and normalized provider errors.
-- Added the Twilio adapter with Basic authentication, form-encoded message
-  submission, accepted-result handling, and normalized provider errors.
-- Added the Infobip adapter with API-key authentication, advanced SMS JSON
-  request mapping, accepted-result handling, and normalized provider errors.
-- Added the basic provider router with enabled-provider filtering, priority
-  ordering, and deterministic tie-breaking.
-- Made retry and provider-failover classification explicit for normalized
-  errors, distinguishing transient transport failures from terminal request
-  and provider-configuration failures.
-- Added bounded provider failover with deterministic ordering, terminal-error
-  short-circuiting, and delivery attempt records.
-- Added a thread-safe in-memory circuit breaker with failure thresholds,
-  observation windows, cooldowns, and controlled half-open probes.
-- Added in-memory provider health snapshots derived from delivery attempts,
-  including recent outcomes, consecutive failures, latency, and circuit state.
-- Added a replaceable provider election policy with capability filtering,
-  circuit eligibility, health-aware scoring, and deterministic ordering.
-- Added provider recovery verification for cooldown probes, re-election,
-  stable preference, and failed-probe reopening.
-- Formalized the shared capability vocabulary and normalization used by
-  messages, provider configurations, and election filtering.
-- Added the process-local `StateStore::Memory` implementation for shared
-  circuit, health, and election runtime state.
-- Added dependency-free structured observability events for elections,
-  attempts, failovers, and circuit transitions, with an in-memory event sink
-  and subscriber hooks.
-- Added provider-neutral immutable delivery events and delivery-state updates
-  for future webhook integrations.
-- Added concurrency coverage for atomic state initialization and documented
-  the Ruby compatibility and opt-in provider integration boundaries.
-- Deferred Phase 17 additional-provider integrations until the core runtime
-  and observability work are further established.
+- Add the `Sms::Sender` API backed by shared `sender-core` contracts while
+  preserving legacy require paths.
+- Add provider configuration, lazy loading, capability filtering, and
+  adapters for TextBee, Semaphore, Twilio, and Infobip.
+- Add a standard-library HTTP transport with JSON and form serialization,
+  configurable timeouts, normalized transport errors, and credential
+  redaction.
+- Add provider-neutral routing with deterministic election, bounded failover,
+  circuit protection, health tracking, and attempt history.
+- Add immutable delivery events and state updates for receipt integrations.
+- Add dependency-free structured observability events for elections, attempts,
+  failovers, and circuit transitions.
+
+### Quality
+
+- Add focused tests, concurrency coverage, RBS signatures, and the
+  `bundle exec rake` quality harness with 100% YARD documentation coverage.
+- Add gem metadata and publishing configuration.
+- Add environment-based provider selection, default-provider priority, and
+  JSON provider settings configuration.

@@ -4,25 +4,17 @@
 to let applications use one domain API while provider adapters handle the
 details of individual HTTP APIs.
 
-The project is being built as one gem with thin, lazily loaded provider
-adapters. The planned runtime includes health-aware provider selection,
-controlled failover, circuit breaking, capability filtering, and normalized
-delivery results and errors.
+The project uses thin, lazily loaded provider adapters and a shared runtime
+for health-aware provider selection, controlled failover, circuit breaking,
+capability filtering, and normalized delivery results and errors.
 
-## Status
+## Origin
 
-Phases 1–16, 18, and the provider-neutral portion of 19 are implemented. The current release provides the message,
-delivery, error, provider configuration, provider contract, supported-provider
-catalog, lazy provider loading, and an injectable standard-library HTTP
-transport, plus direct TextBee, Semaphore, Twilio, and Infobip HTTP delivery.
-It also provides a basic priority-based delivery router, explicit
-retry/failover error classification, bounded failover, an in-memory circuit
-breaker, and provider health snapshots derived from real delivery attempts.
-It also provides a replaceable health-aware provider election policy with
-provider recovery after circuit cooldown, shared capability filtering for
-election, process-local runtime state storage, dependency-free structured
-observability events, and provider-neutral delivery events. The
-remaining routing features are planned for subsequent phases.
+`sms-sender` was extracted from the Pink House SaaS project so its SMS
+delivery capability could be reused independently of the application. Shared
+delivery contracts and runtime behavior live in
+[`sender-core`](https://github.com/kanutocd/sender-core); this gem owns SMS
+validation, provider adapters, and SMS-specific request and response mapping.
 
 ## Installation
 
@@ -42,6 +34,19 @@ The gem depends on the channel-neutral `sender-core` runtime and has no
 mandatory provider SDK dependencies. Provider integrations use documented
 HTTP APIs directly.
 
+To configure providers from environment variables, list the desired providers
+and identify the preferred default. The default receives the highest election
+priority; other selected providers remain available for failover:
+
+```bash
+SMS_SENDER_PROVIDERS=textbee,twilio
+SMS_SENDER_DEFAULT_PROVIDER=twilio
+SMS_SENDER_TEXTBEE_SETTINGS='{"api_key":"...","device_id":"..."}'
+```
+
+Call `Sms::Sender.configure_from_env` during application boot. Each provider's
+`*_SETTINGS` value is a JSON object whose keys match that adapter's settings.
+
 ## Compatibility boundary
 
 Shared contracts such as `Message`, `Delivery`, `Provider`, `Router`, and
@@ -50,10 +55,9 @@ existing `Sms::Sender` constants. SMS provider adapters and the SMS provider
 catalog remain in this gem. Existing `lib/sms/sender/*` require paths are
 preserved as compatibility shims.
 
-## Current usage
+## Usage
 
-The Phase 1 domain objects can be used to construct provider-neutral messages
-and configurations:
+Construct provider-neutral messages and configurations:
 
 ```ruby
 require "sms_sender"
@@ -90,8 +94,15 @@ class MyProvider < Sms::Sender::Provider
 end
 ```
 
-The high-level `Sms::Sender.deliver` API will be introduced with the routing
-phases.
+The high-level API routes through configured providers and returns a normalized
+delivery result:
+
+```ruby
+delivery = Sms::Sender.deliver(
+  to: "+639171234567",
+  body: "Your OTP is 123456"
+)
+```
 
 The registry exposes the providers supported by the gem without loading their
 adapter implementations:
@@ -179,31 +190,6 @@ bundle exec rake yard      # Generate API documentation
 bundle exec rake build     # Build the gem
 bin/console                # Open a Ruby console
 ```
-
-## Roadmap
-
-The implementation plan is organized as follows:
-
-1. Core domain objects and contracts — complete
-2. Provider registry and lazy loading — complete
-3. Internal HTTP transport — complete
-4. TextBee adapter — complete
-5. Semaphore adapter — complete
-6. Twilio adapter — complete
-7. Infobip adapter — complete
-8. Basic router — complete
-9. Failure classification — complete
-10. Controlled failover — complete
-11. Circuit breaker — complete
-12. Provider health — complete
-13. Automatic election — complete
-14. Provider recovery — complete
-15. Capability filtering — complete
-16. State store — complete
-17. Additional providers — deferred
-18. Observability — complete
-19. Delivery receipts — complete at the provider-neutral event model level
-20. Production hardening
 
 ### Compatibility and integration boundary
 
