@@ -17,6 +17,7 @@ Gem::Specification.new do |spec|
   spec.homepage = "https://kanutocd.github.io/sms-sender"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.2.0"
+  spec.add_dependency "sender-core", "~> 0.1"
   spec.metadata["allowed_push_host"] = "https://rubygems.org"
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = "https://github.com/kanutocd/sms-sender"
