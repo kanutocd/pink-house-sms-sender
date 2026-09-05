@@ -5,8 +5,10 @@ module Sms
     # Selects one eligible configured provider for a delivery.
     class Router
       # @param registry [ProviderRegistry] provider registry to route through
-      def initialize(registry: Sms::Sender.registry)
+      def initialize(registry: Sms::Sender.registry, circuit_options: {})
         @registry = registry
+        @circuit_options = circuit_options
+        @circuits = {}
       end
 
       # Deliver a normalized message through the best eligible provider.
@@ -26,8 +28,10 @@ module Sms
 
         candidates.first(attempt_limit).each do |candidate|
           delivery = candidate.deliver(message)
+          circuit_for(candidate).record_success
           return with_attempt(delivery, attempts, candidate.name, :accepted)
         rescue Errors::Base => e
+          circuit_for(candidate).record_failure(e)
           attempts << attempt_record(candidate.name, :failed, e)
           last_error = e
           raise unless e.failover?
@@ -40,7 +44,7 @@ module Sms
 
       def eligible_providers(name = nil)
         candidates = name ? [@registry.provider(name)] : @registry.providers
-        selected = candidates.select { |item| item.configuration.enabled? }
+        selected = candidates.select { |item| item.configuration.enabled? && circuit_for(item).allow? }
                              .sort { |left, right| provider_order(right) <=> provider_order(left) }
         return selected unless selected.empty?
 
@@ -55,6 +59,10 @@ module Sms
 
       def provider_order(provider)
         [provider.configuration.priority, provider.name.to_s]
+      end
+
+      def circuit_for(provider)
+        @circuits[provider.name] ||= CircuitBreaker.new(**@circuit_options)
       end
 
       def attempt_record(provider, status, error = nil)

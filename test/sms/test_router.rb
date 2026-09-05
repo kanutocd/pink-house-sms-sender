@@ -118,6 +118,22 @@ module Sms
         assert_raises(ArgumentError) { router.deliver(Message.new(to: "+1", body: "Hello"), max_attempts: 0) }
       end
 
+      def test_excludes_open_provider_and_uses_recovery_probe
+        first = fake_provider(:textbee, priority: 10, failure: Errors::Network.new(provider: :textbee))
+        second = fake_provider(:semaphore, priority: 1)
+        router = Router.new(
+          registry: registry_with(first, second),
+          circuit_options: { failure_threshold: 1, open_cooldown: 5 }
+        )
+        message = Message.new(to: "+1", body: "Hello")
+
+        router.deliver(message)
+        delivery = router.deliver(message)
+
+        assert_equal :semaphore, delivery.provider
+        assert_equal 1, first.calls.length
+      end
+
       private
 
       def fake_provider(name, priority: 0, enabled: true, failure: nil)

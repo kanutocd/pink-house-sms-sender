@@ -106,8 +106,22 @@ module Sms
     end
 
     class Router
-      def initialize: (?registry: ProviderRegistry) -> void
+      def initialize: (?registry: ProviderRegistry, ?circuit_options: Hash[Symbol, untyped]) -> void
       def deliver: (Message message, ?provider: (Symbol | String)?, ?max_attempts: Integer?) -> Delivery
+    end
+
+    class CircuitBreaker
+      STATES: Array[Symbol]
+      DEFAULT_FAILURE_THRESHOLD: Integer
+      DEFAULT_OBSERVATION_WINDOW: Integer
+      DEFAULT_OPEN_COOLDOWN: Integer
+      DEFAULT_HALF_OPEN_PROBE_LIMIT: Integer
+
+      def initialize: (?failure_threshold: Integer, ?observation_window: Numeric, ?open_cooldown: Numeric, ?half_open_probe_limit: Integer, ?clock: ^() -> Numeric) -> void
+      def state: () -> Symbol
+      def allow?: () -> bool
+      def record_success: () -> void
+      def record_failure: (Errors::Base error) -> void
     end
 
     class ProviderRegistry

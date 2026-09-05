@@ -29,3 +29,5 @@
   and provider-configuration failures.
 - Added bounded provider failover with deterministic ordering, terminal-error
   short-circuiting, and delivery attempt records.
+- Added a thread-safe in-memory circuit breaker with failure thresholds,
+  observation windows, cooldowns, and controlled half-open probes.
