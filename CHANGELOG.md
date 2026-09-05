@@ -24,3 +24,6 @@
   request mapping, accepted-result handling, and normalized provider errors.
 - Added the basic provider router with enabled-provider filtering, priority
   ordering, and deterministic tie-breaking.
+- Made retry and provider-failover classification explicit for normalized
+  errors, distinguishing transient transport failures from terminal request
+  and provider-configuration failures.

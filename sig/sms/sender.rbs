@@ -11,6 +11,9 @@ module Sms
     VERSION: String
 
     module Errors
+      FAILOVER_CATEGORIES: Array[Symbol]
+      RETRYABLE_CATEGORIES: Array[Symbol]
+
       class Base < Error
         attr_reader category: Symbol
         attr_reader provider: Symbol?

@@ -4,6 +4,11 @@ module Sms
   module Sender
     # Namespace for normalized delivery errors.
     module Errors
+      # Errors that may be retried and sent to another provider.
+      FAILOVER_CATEGORIES = %i[network timeout rate_limited provider_unavailable].freeze
+      # Errors that may be retried against the same provider.
+      RETRYABLE_CATEGORIES = (FAILOVER_CATEGORIES + %i[authentication authorization]).freeze
+
       # Base error raised by the sender runtime.
       class Base < Sender::Error
         # @return [Symbol] normalized error category
@@ -23,20 +28,17 @@ module Sms
 
         # @return [Boolean] whether this error can be retried
         def retryable?
-          false
+          RETRYABLE_CATEGORIES.include?(category)
         end
 
         # @return [Boolean] whether this error permits provider failover
         def failover?
-          retryable?
+          FAILOVER_CATEGORIES.include?(category)
         end
       end
 
       # Base class for errors originating from a provider or its transport.
       class ProviderError < Base
-        def retryable?
-          true
-        end
       end
 
       # A network-level failure occurred before a response was received.
