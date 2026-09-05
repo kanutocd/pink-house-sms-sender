@@ -1,6 +1,97 @@
 module Sms
   module Sender
+    class Error < StandardError
+    end
+
     VERSION: String
-    # See the writing guide of rbs: https://github.com/ruby/rbs#guides
+
+    module Errors
+      class Base < Error
+        attr_reader category: Symbol
+        attr_reader provider: Symbol?
+
+        def initialize: (?String?, ?category: Symbol, ?provider: Symbol?) -> void
+        def retryable?: () -> bool
+        def failover?: () -> bool
+      end
+
+      class ProviderError < Base
+      end
+
+      class Network < ProviderError
+      end
+
+      class Timeout < ProviderError
+      end
+
+      class RateLimited < ProviderError
+      end
+
+      class Authentication < ProviderError
+      end
+
+      class Authorization < ProviderError
+      end
+
+      class InvalidRequest < Base
+      end
+
+      class InvalidRecipient < Base
+      end
+
+      class ProviderUnavailable < ProviderError
+      end
+
+      class ProviderRejected < Base
+      end
+
+      class Unknown < Base
+      end
+    end
+
+    class Message
+      attr_reader to: String
+      attr_reader body: String
+      attr_reader metadata: Hash[untyped, untyped]
+      attr_reader requirements: Array[Symbol]
+
+      def initialize: (to: String, body: String, ?metadata: Hash[untyped, untyped], ?requirements: Array[Symbol]) -> void
+    end
+
+    class Delivery
+      STATUSES: Array[Symbol]
+      attr_reader status: Symbol
+      attr_reader provider: Symbol?
+      attr_reader provider_message_id: String?
+      attr_reader attempts: Array[Hash[untyped, untyped]]
+      attr_reader error: Errors::Base?
+      attr_reader metadata: Hash[untyped, untyped]
+
+      def initialize: (?status: Symbol, ?provider: Symbol?, ?provider_message_id: untyped, ?attempts: Array[Hash[untyped, untyped]], ?error: Errors::Base?, ?metadata: Hash[untyped, untyped]) -> void
+      def accepted?: () -> bool
+      def delivered?: () -> bool
+      def failed?: () -> bool
+    end
+
+    class ProviderConfiguration
+      attr_reader name: Symbol
+      attr_reader settings: Hash[untyped, untyped]
+      attr_reader enabled: bool
+      attr_reader priority: Integer
+      attr_reader capabilities: Array[Symbol]
+
+      def initialize: (name: Symbol | String, ?settings: Hash[untyped, untyped], ?enabled: bool, ?priority: Integer, ?capabilities: Array[Symbol]) -> void
+      def []: (Symbol | String) -> untyped
+      def enabled?: () -> bool
+    end
+
+    class Provider
+      attr_reader configuration: ProviderConfiguration
+
+      def initialize: (configuration: ProviderConfiguration) -> void
+      def name: () -> Symbol
+      def capabilities: () -> Array[Symbol]
+      def deliver: (untyped) -> untyped
+    end
   end
 end

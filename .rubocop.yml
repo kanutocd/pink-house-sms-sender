@@ -14,3 +14,17 @@ Style/StringLiteralsInInterpolation:
 
 Minitest/MultipleAssertions:
   Max: 5
+
+Metrics/AbcSize:
+  Exclude:
+    - "test/sms/test_delivery.rb"
+
+Metrics/MethodLength:
+  Exclude:
+    - "test/sms/test_delivery.rb"
+    - "test/sms/test_message.rb"
+    - "test/sms/test_provider_configuration.rb"
+
+Metrics/ParameterLists:
+  Exclude:
+    - "lib/sms/sender/delivery.rb"
