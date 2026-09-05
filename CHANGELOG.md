@@ -44,5 +44,7 @@
 - Added dependency-free structured observability events for elections,
   attempts, failovers, and circuit transitions, with an in-memory event sink
   and subscriber hooks.
+- Added provider-neutral immutable delivery events and delivery-state updates
+  for future webhook integrations.
 - Deferred Phase 17 additional-provider integrations until the core runtime
   and observability work are further established.

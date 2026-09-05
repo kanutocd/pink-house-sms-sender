@@ -88,6 +88,18 @@ module Sms
       def accepted?: () -> bool
       def delivered?: () -> bool
       def failed?: () -> bool
+      def with_event: (DeliveryEvent event) -> Delivery
+    end
+
+    class DeliveryEvent
+      attr_reader provider: Symbol
+      attr_reader provider_message_id: String
+      attr_reader status: Symbol
+      attr_reader metadata: Hash[untyped, untyped]
+      attr_reader error: Errors::Base?
+      attr_reader occurred_at: Time
+
+      def initialize: (provider: Symbol | String, provider_message_id: untyped, status: Symbol, ?metadata: Hash[untyped, untyped], ?error: Errors::Base?, ?occurred_at: Time) -> void
     end
 
     class ProviderConfiguration

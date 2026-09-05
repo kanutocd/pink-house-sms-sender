@@ -40,6 +40,25 @@ module Sms
         status == :failed
       end
 
+      # Apply a provider webhook event to this immutable delivery state.
+      # @param event [DeliveryEvent] normalized provider status update
+      # @return [Delivery] updated delivery state
+      def with_event(event)
+        raise ArgumentError, "event must be a Sms::Sender::DeliveryEvent" unless event.is_a?(DeliveryEvent)
+        if provider && (event.provider != provider || event.provider_message_id != provider_message_id)
+          raise ArgumentError, "delivery event does not match this delivery"
+        end
+
+        Delivery.new(
+          status: event.status,
+          provider: event.provider,
+          provider_message_id: event.provider_message_id,
+          attempts: attempts,
+          error: event.error,
+          metadata: metadata.merge(event.metadata)
+        )
+      end
+
       private
 
       def normalize_status(value)

@@ -31,6 +31,7 @@ Metrics/AbcSize:
     - "test/sms/test_router.rb"
     - "test/sms/test_state_store.rb"
     - "lib/sms/sender/router.rb"
+    - "lib/sms/sender/delivery.rb"
 
 Metrics/MethodLength:
   Exclude:
@@ -50,6 +51,8 @@ Metrics/MethodLength:
     - "test/sms/test_infobip.rb"
     - "test/sms/test_router.rb"
     - "lib/sms/sender/router.rb"
+    - "test/sms/test_delivery_event.rb"
+    - "lib/sms/sender/delivery.rb"
 
 Metrics/CyclomaticComplexity:
   Exclude:
@@ -60,6 +63,7 @@ Metrics/ParameterLists:
   Exclude:
     - "lib/sms/sender/delivery.rb"
     - "lib/sms/sender/http.rb"
+    - "lib/sms/sender/delivery_event.rb"
 
 Metrics/PerceivedComplexity:
   Exclude:
