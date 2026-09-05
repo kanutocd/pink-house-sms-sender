@@ -44,10 +44,24 @@ SMS_SENDER_DEFAULT_PROVIDER=twilio
 SMS_SENDER_TEXTBEE_SETTINGS='{"api_key":"...","device_id":"..."}'
 ```
 
+Multiple accounts of one provider can be configured as named instances. An
+instance name uses the adapter name as its prefix:
+
+```bash
+SMS_SENDER_PROVIDERS=textbee_primary,textbee_backup
+SMS_SENDER_DEFAULT_PROVIDER=textbee_primary
+SMS_SENDER_TEXTBEE_PRIMARY_SETTINGS='{"api_key":"...","device_id":"..."}'
+SMS_SENDER_TEXTBEE_BACKUP_SETTINGS='{"api_key":"...","device_id":"..."}'
+```
+
+Each instance has independent priority, fallback, circuit-breaker, and health
+state. Existing single-provider variables remain supported.
+
 Call `Sms::Sender.configure_from_env` during application boot. Each provider's
 `*_SETTINGS` value is a JSON object whose keys match that adapter's settings.
 Provider metadata includes an advisory `support_level`; it is informational
-only and does not prevent use of experimental or deprecated providers.
+only and does not prevent use of experimental, deprecated, or unsupported
+providers.
 
 ## Compatibility boundary
 

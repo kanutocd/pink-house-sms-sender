@@ -17,6 +17,7 @@ module Sms
 
         assert_equal %i[textbee semaphore twilio infobip], registry.supported
         assert_equal :experimental, registry.provider_metadata(:semaphore).fetch(:support_level)
+        assert_equal :unsupported, registry.provider_metadata(:infobip).fetch(:support_level)
         assert_empty registry.configured
         assert_includes Sender.providers, :textbee
       end

@@ -64,7 +64,7 @@ module Sms
         textbee: { path: "sms/sender/providers/text_bee", support_level: :supported },
         semaphore: { path: "sms/sender/providers/semaphore", support_level: :experimental },
         twilio: { path: "sms/sender/providers/twilio", support_level: :experimental },
-        infobip: { path: "sms/sender/providers/infobip", support_level: :supported }
+        infobip: { path: "sms/sender/providers/infobip", support_level: :unsupported }
       }.freeze
 
       # @param catalog [Hash] SMS provider names mapped to adapter paths
@@ -120,6 +120,7 @@ module Sms
         raise ArgumentError, "default provider must be selected" unless names.include?(default)
 
         names.each_with_index do |name, index|
+          ensure_environment_provider(name)
           priority = name == default ? names.length + 1 : names.length - index
           configure_provider(name, settings: environment_settings(env, name), priority: priority)
         end
@@ -142,6 +143,15 @@ module Sms
       end
 
       private
+
+      def ensure_environment_provider(name)
+        return if registry.supported.include?(name.to_sym)
+
+        adapter, instance = name.split("_", 2)
+        return registry.register_alias(name, source: adapter) if instance && registry.supported.include?(adapter.to_sym)
+
+        raise ArgumentError, "unknown provider or provider instance: #{name}"
+      end
 
       def environment_settings(env, name)
         raw = env["SMS_SENDER_#{name.upcase}_SETTINGS"]

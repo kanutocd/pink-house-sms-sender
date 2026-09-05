@@ -2,6 +2,10 @@
 
 ### Added
 
+- Support multiple named instances of the same SMS provider adapter with
+  independent settings and runtime state.
+- Mark Infobip as an advisory `unsupported` provider after live delivery
+  verification could not be completed.
 - Identify catalog providers with advisory `support_level` metadata; values are
   informational and never prevent provider use.
 - Add the `Sms::Sender` API backed by shared `sender-core` contracts while
