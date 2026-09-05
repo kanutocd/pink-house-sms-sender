@@ -26,7 +26,21 @@ module Sms
     # Shared provider configuration value.
     ProviderConfiguration = ::Sender::Core::ProviderConfiguration
     # Shared delivery router.
-    Router = ::Sender::Core::Router
+    # SMS facade over the shared delivery router.
+    class Router < ::Sender::Core::Router
+      # @param registry [ProviderRegistry, nil] SMS provider registry
+      # @param circuit_options [Hash] circuit-breaker options
+      # @param state_store [StateStore::Memory, nil] runtime state store
+      # @param observer [Observability::Memory, nil] event observer
+      def initialize(registry: nil, circuit_options: {}, state_store: nil, observer: nil)
+        super(
+          registry: registry || Sender.registry,
+          circuit_options: circuit_options,
+          state_store: state_store || StateStore::Memory.new,
+          observer: observer || Observability::Memory.new
+        )
+      end
+    end
     # Shared provider circuit breaker.
     CircuitBreaker = ::Sender::Core::CircuitBreaker
     # Shared runtime state store namespace.

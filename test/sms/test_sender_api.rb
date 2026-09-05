@@ -37,6 +37,18 @@ module Sms
         end
       end
 
+      def test_router_uses_the_sms_registry_by_default
+        with_fresh_registry do
+          Sender.registry.register(:facade, loader: -> { FacadeProvider })
+          Sender.configure_provider(:facade)
+
+          delivery = Router.new.deliver(Message.new(to: "+1", body: "hello"))
+
+          assert_equal :accepted, delivery.status
+          assert_equal :facade, delivery.provider
+        end
+      end
+
       private
 
       def with_fresh_registry

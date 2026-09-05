@@ -38,8 +38,17 @@ Then install it with Bundler:
 bundle install
 ```
 
-The gem currently has no mandatory provider SDK dependencies. Provider
-integrations will use documented HTTP APIs directly.
+The gem depends on the channel-neutral `sender-core` runtime and has no
+mandatory provider SDK dependencies. Provider integrations use documented
+HTTP APIs directly.
+
+## Compatibility boundary
+
+Shared contracts such as `Message`, `Delivery`, `Provider`, `Router`, and
+normalized errors are supplied by `sender-core` and exposed through the
+existing `Sms::Sender` constants. SMS provider adapters and the SMS provider
+catalog remain in this gem. Existing `lib/sms/sender/*` require paths are
+preserved as compatibility shims.
 
 ## Current usage
 

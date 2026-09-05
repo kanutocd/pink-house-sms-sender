@@ -2,6 +2,8 @@
 
 - Start wiring `sms-sender` to the extracted `sender-core` gem and
   exposing shared contracts through the existing `Sms::Sender` API.
+- Preserve SMS router defaults and legacy shared-file require paths while
+  delegating shared runtime behavior to `sender-core`.
 
 - Added the `bundle exec rake` quality harness covering tests, RuboCop, RBS,
   and YARD documentation coverage.
