@@ -9,6 +9,7 @@ module Sms
         @registry = registry
         @circuit_options = circuit_options
         @circuits = {}
+        @health = {}
       end
 
       # Deliver a normalized message through the best eligible provider.
@@ -27,17 +28,30 @@ module Sms
         last_error = nil
 
         candidates.first(attempt_limit).each do |candidate|
+          started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
           delivery = candidate.deliver(message)
           circuit_for(candidate).record_success
+          health_for(candidate).record_success(
+            latency: elapsed_since(started_at), circuit_state: circuit_for(candidate).state
+          )
           return with_attempt(delivery, attempts, candidate.name, :accepted)
         rescue Errors::Base => e
           circuit_for(candidate).record_failure(e)
+          health_for(candidate).record_failure(
+            latency: elapsed_since(started_at), error: e, circuit_state: circuit_for(candidate).state
+          )
           attempts << attempt_record(candidate.name, :failed, e)
           last_error = e
           raise unless e.failover?
         end
 
         Delivery.new(status: :failed, provider: last_error.provider, attempts: attempts, error: last_error)
+      end
+
+      # @param name [Symbol, String] configured provider name
+      # @return [Hash] current provider health snapshot
+      def health(name)
+        health_for(@registry.provider(name)).snapshot
       end
 
       private
@@ -63,6 +77,16 @@ module Sms
 
       def circuit_for(provider)
         @circuits[provider.name] ||= CircuitBreaker.new(**@circuit_options)
+      end
+
+      def health_for(provider)
+        @health[provider.name] ||= Health.new(
+          observation_window: @circuit_options.fetch(:observation_window, CircuitBreaker::DEFAULT_OBSERVATION_WINDOW)
+        )
+      end
+
+      def elapsed_since(started_at)
+        Process.clock_gettime(Process::CLOCK_MONOTONIC) - started_at
       end
 
       def attempt_record(provider, status, error = nil)

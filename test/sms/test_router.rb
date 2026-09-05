@@ -76,7 +76,8 @@ module Sms
         first = fake_provider(:textbee, priority: 10, failure: Errors::Network.new(provider: :textbee))
         second = fake_provider(:semaphore, priority: 1)
 
-        delivery = Router.new(registry: registry_with(first, second)).deliver(Message.new(to: "+1", body: "Hello"))
+        router = Router.new(registry: registry_with(first, second))
+        delivery = router.deliver(Message.new(to: "+1", body: "Hello"))
 
         assert_equal :semaphore, delivery.provider
         providers = delivery.attempts.map { |attempt| attempt[:provider] }
@@ -85,6 +86,8 @@ module Sms
         assert_equal %i[textbee semaphore], providers
         assert_equal %i[failed accepted], statuses
         assert_equal :network, delivery.attempts.first[:error]
+        assert_equal 1, router.health(:textbee)[:recent_failures]
+        assert_equal 1, router.health(:semaphore)[:recent_successes]
       end
 
       def test_does_not_fail_over_terminal_errors

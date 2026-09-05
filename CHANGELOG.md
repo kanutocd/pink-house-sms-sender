@@ -31,3 +31,5 @@
   short-circuiting, and delivery attempt records.
 - Added a thread-safe in-memory circuit breaker with failure thresholds,
   observation windows, cooldowns, and controlled half-open probes.
+- Added in-memory provider health snapshots derived from delivery attempts,
+  including recent outcomes, consecutive failures, latency, and circuit state.

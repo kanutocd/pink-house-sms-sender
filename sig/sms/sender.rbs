@@ -108,6 +108,7 @@ module Sms
     class Router
       def initialize: (?registry: ProviderRegistry, ?circuit_options: Hash[Symbol, untyped]) -> void
       def deliver: (Message message, ?provider: (Symbol | String)?, ?max_attempts: Integer?) -> Delivery
+      def health: (Symbol | String name) -> Hash[Symbol, untyped]
     end
 
     class CircuitBreaker
@@ -122,6 +123,13 @@ module Sms
       def allow?: () -> bool
       def record_success: () -> void
       def record_failure: (Errors::Base error) -> void
+    end
+
+    class Health
+      def initialize: (?observation_window: Numeric, ?clock: ^() -> Numeric) -> void
+      def record_success: (latency: Numeric, ?circuit_state: Symbol) -> void
+      def record_failure: (latency: Numeric, error: Errors::Base, ?circuit_state: Symbol) -> void
+      def snapshot: () -> Hash[Symbol, untyped]
     end
 
     class ProviderRegistry
