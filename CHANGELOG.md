@@ -22,3 +22,5 @@
   submission, accepted-result handling, and normalized provider errors.
 - Added the Infobip adapter with API-key authentication, advanced SMS JSON
   request mapping, accepted-result handling, and normalized provider errors.
+- Added the basic provider router with enabled-provider filtering, priority
+  ordering, and deterministic tie-breaking.

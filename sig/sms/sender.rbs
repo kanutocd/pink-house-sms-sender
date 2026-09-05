@@ -102,6 +102,11 @@ module Sms
       def deliver: (untyped) -> untyped
     end
 
+    class Router
+      def initialize: (?registry: ProviderRegistry) -> void
+      def deliver: (Message message, ?provider: (Symbol | String)?) -> Delivery
+    end
+
     class ProviderRegistry
       DEFAULT_PROVIDERS: Hash[Symbol, String]
 
