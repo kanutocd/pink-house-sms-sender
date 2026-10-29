@@ -4,7 +4,6 @@ source "https://rubygems.org"
 
 # Specify your gem's dependencies in sms-sender.gemspec
 gemspec
-gem "pink-house-sender-core", path: "../sender-core"
 
 gem "irb"
 gem "rake", "~> 13.0"
